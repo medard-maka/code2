@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Lecteur RFID</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Styles CSS existants */
+    </style>
+</head>
+
+<body>
+    <h1>Lecteur RFID</h1>
+    <p>Présentez une carte RFID pour ajouter son ID :</p>
+    <div id="card-id"></div>
+    <div class="input-group">
+        <label for="name-input">Nom :</label>
+        <input type="text" id="name-input" placeholder="Entrez le nom">
+    </div>
+    <button id="add-button">Ajouter la carte</button>
+    <table id="card-table">
+        <thead>
+            <tr>
+                <th>ID de la Carte</th>
+                <th>Nom</th>
+            </tr>
+        </thead>
+        <tbody id="card-table-body">
+        </tbody>
+    </table>
+
+    <script>
+        let cardData = [];
+
+        function updateCardID(cardID) {
+            document.getElementById("card-id").textContent = cardID;
+        }
+
+        function addCardToTable(cardID, name) {
+            const existingIndex = cardData.findIndex(item => item.cardID === cardID);
+            if (existingIndex === -1) {
+                cardData.push({
+                    cardID,
+                    name
+                });
+                const row = document.createElement("tr");
+                const idCell = document.createElement("td");
+                const nameCell = document.createElement("td");
+                idCell.textContent = cardID;
+                nameCell.textContent = name;
+                row.appendChild(idCell);
+                row.appendChild(nameCell);
+                document.getElementById("card-table-body").appendChild(row);
+            } else {
+                cardData[existingIndex].name = name;
+                updateTableRow(existingIndex);
+            }
+        }
+
+        function updateTableRow(index) {
+            const rows = document.getElementById("card-table-body").getElementsByTagName("tr");
+            if (index < rows.length) {
+                rows[index].children[1].textContent = cardData[index].name;
+            }
+        }
+
+        document.getElementById("add-button").addEventListener("click", function() {
+            const currentCardID = document.getElementById("card-id").textContent;
+            const nameInput = document.getElementById("name-input");
+            addCardToTable(currentCardID, nameInput.value);
+            nameInput.value = "";
+        });
+
+        setInterval(function() {
+            fetch("/readRFID")
+                .then(response => response.text())
+                .then(cardID => {
+                    updateCardID(cardID);
+                });
+        }, 1000);
+    </script>
+</body>
+
+</html>
